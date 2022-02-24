@@ -90,3 +90,36 @@ func (h *Holmes) writeString(content string) {
 		_ = old.Close()
 	}
 }
+
+// LoggerI is a logger interface
+type LoggerI interface {
+	Logf(pattern string, args ...interface{})
+	Debugf(pattern string, args ...interface{})
+}
+
+// DefaultLogger is *os.File type value. It will log on holmes.log
+type DefaultLogger struct {
+	*os.File
+}
+
+func (d *DefaultLogger) Logf(pattern string, args ...interface{}) {
+
+}
+func (d *DefaultLogger) Debugf(pattern string, args ...interface{}) {
+
+}
+
+func NewDefaultLogger(dumpPath, f string) (*DefaultLogger, error) {
+	loggerFile, err := os.OpenFile(filepath.Clean(f), defaultLoggerFlags, defaultLoggerPerm)
+	if err != nil && os.IsNotExist(err) {
+		if err = os.MkdirAll(dumpPath, 0755); err != nil {
+			return nil, err
+		}
+		loggerFile, err = os.OpenFile(filepath.Clean(f), defaultLoggerFlags, defaultLoggerPerm)
+		if err != nil {
+			return nil, err
+		}
+	}
+	res := &DefaultLogger{loggerFile}
+	return res, nil
+}

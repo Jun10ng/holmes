@@ -5,10 +5,7 @@ import (
 	"path"
 	"path/filepath"
 	"sync"
-	"sync/atomic"
 	"time"
-
-	"github.com/docker/go-units"
 )
 
 type options struct {
@@ -21,8 +18,8 @@ type options struct {
 	*DumpOptions
 
 	LogLevel int
-	// Logger *os.File
-	Logger atomic.Value
+
+	Logger LoggerI
 
 	// interval for dump loop, default 5s
 	CollectInterval   time.Duration
@@ -175,23 +172,24 @@ func WithCPUMax(max int) Option {
 // WithDumpPath set the dump path for holmes.
 func WithDumpPath(dumpPath string, loginfo ...string) Option {
 	return optionFunc(func(opts *options) (err error) {
-		var logger *os.File
+		// initial profiles dump path
 		f := path.Join(dumpPath, defaultLoggerName)
+		opts.DumpPath = filepath.Dir(f)
+
+		if opts.Logger != nil {
+			return // holmes have has an extern logger
+		}
+
+		// initial default logger
 		if len(loginfo) > 0 {
 			f = dumpPath + "/" + path.Join(loginfo...)
 		}
-		opts.DumpPath = filepath.Dir(f)
-		logger, err = os.OpenFile(filepath.Clean(f), defaultLoggerFlags, defaultLoggerPerm)
-		if err != nil && os.IsNotExist(err) {
-			if err = os.MkdirAll(opts.DumpPath, 0755); err != nil {
-				return
-			}
-			logger, err = os.OpenFile(filepath.Clean(f), defaultLoggerFlags, defaultLoggerPerm)
-			if err != nil {
-				return
-			}
+
+		logger, err := NewDefaultLogger(dumpPath, f)
+		if err != nil {
+			return
 		}
-		opts.Logger.Store(logger)
+		opts.Logger = logger
 		return
 	})
 }
