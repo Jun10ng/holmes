@@ -19,13 +19,15 @@ package main
 
 import (
 	"fmt"
-	mlog "mosn.io/pkg/log"
 	"net/http"
 	"time"
+
+	mlog "mosn.io/pkg/log"
 
 	"mosn.io/holmes"
 )
 
+// run `curl http://localhost:10003/alloc` after 15s(warn up)
 func init() {
 	http.HandleFunc("/alloc", alloc)
 	go http.ListenAndServe(":10003", nil) //nolint:errcheck
@@ -34,8 +36,8 @@ func init() {
 func main() {
 	h, _ := holmes.New(
 		holmes.WithCollectInterval("2s"),
-		holmes.WithDumpPath("/tmp"),
-		holmes.WithLogger(holmes.NewFileLog("/tmp/holmes.log", mlog.INFO)),
+		holmes.WithDumpPath("./tmp"),
+		holmes.WithLogger(holmes.NewFileLog("./tmp/holmes.log", mlog.DEBUG)),
 		holmes.WithTextDump(),
 		holmes.WithMemDump(3, 25, 80, time.Minute),
 	)

@@ -34,7 +34,7 @@ func init() {
 func main() {
 	h, _ := holmes.New(
 		holmes.WithCollectInterval("2s"),
-		holmes.WithDumpPath("/tmp"),
+		holmes.WithDumpPath("./tmp"),
 		holmes.WithTextDump(),
 		holmes.WithMemDump(3, 25, 80, time.Minute),
 		holmes.WithCPUDump(60, 10, 80, time.Minute),
